@@ -1,95 +1,131 @@
 use std::{io::{stdout, Error}, vec};
 use crossterm::{cursor, execute, style::Color, terminal::{self, ClearType}};
-use ratatui::{self, backend::CrosstermBackend, layout::{Constraint, Direction, Layout, Rect}, style::Stylize, widgets::{Block, Borders, Clear, Paragraph, Widget}, Terminal};
+use image::{load_from_memory, GenericImageView};
+use ratatui::{self, backend::CrosstermBackend, layout::{Constraint, Direction, Layout, Rect}, style::Stylize, widgets::{Block, Borders, Paragraph}, Terminal};
 use rand::Rng;
 
-use super::player::Player;
+use super::{player::Player, map::Map};
 
-const NAMED_COLORS: [ratatui::prelude::Color; 7] = [
-    ratatui::prelude::Color::Black,
-    ratatui::prelude::Color::Red,
-    ratatui::prelude::Color::Green,
-    ratatui::prelude::Color::Blue,
-    ratatui::prelude::Color::Magenta,
-    ratatui::prelude::Color::Cyan,
-    ratatui::prelude::Color::White,
-];
-
-pub struct Render {
-    //pub map: Map
-}
+pub struct Render {}
 
 impl Render {
-    pub fn init(&self, player: &Player) {
+    pub fn init(&self, player: &Player, map: &Option<Map>) {
         let mut term = Terminal::new(CrosstermBackend::new(stdout())).unwrap(); 
         term.clear().unwrap();
 
         execute!(
             stdout(),
             terminal::Clear(ClearType::Purge),
+            cursor::SetCursorStyle::SteadyUnderScore,
             cursor::Hide,
         ).unwrap();
 
-        let _ = self.update(player);
+        let _ = self.update(player, map);
+    }
+    
+    pub fn clear(&self) {
+        let mut term = Terminal::new(CrosstermBackend::new(stdout())).unwrap(); 
+        term.clear().unwrap();
+
+        execute!(
+            stdout(),
+            terminal::Clear(ClearType::Purge),
+            cursor::SetCursorStyle::SteadyUnderScore,
+            cursor::Hide,
+        ).unwrap();
     }
 
-    pub fn load_map() {
-
-    }
-
-    pub fn update(&self, player: &Player) -> Result<(), Error> {
+    pub fn update(&self, player: &Player, map: &Option<Map>) -> Result<(), Error> {
         let mut term = Terminal::new(CrosstermBackend::new(stdout()))?; 
         
         let _a = term.draw(|frame| {
             let size = terminal::size().unwrap();
-            let area = Rect{ x: 1, y: size.1 - 2, width: size.0-1, height: 1 };
+            let area = Rect{ x: 1, y: size.1 - 2, width: size.0-2, height: 1 };
             
             let cursor = Paragraph::new("").bg(Color::Black);
             frame.render_widget(cursor, area);
         });
-        
-        let _b = term.draw(|frame| {
-             let chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints(
-                    [
-                        Constraint::Fill(1),
-                        Constraint::Length(3)
-                    ],
-                )
-                .split(frame.size());
 
-            //let rows = vec!(1; chunks[0].as_size().height.into());
-            let m_rows = vec!(1; 5);
-            let c_rows = Constraint::from_lengths(m_rows);
+        match map {
+            Some(map) => {
+                let _b = term.draw(|frame| {
+                     let chunks = Layout::default()
+                        .direction(Direction::Vertical)
+                        .constraints(
+                            [
+                                Constraint::Fill(1),
+                                Constraint::Length(3)
+                            ],
+                        )
+                        .split(frame.size());
 
-            let columns = vec!(2; (chunks[0].as_size().width/2).into());
-            let c_columns = Constraint::from_lengths(columns);
+                    //let fs = vec!(1; chunks[0].as_size().height.into());
+                    let map_rows = vec!(1; map.height.try_into().unwrap());
+                    let c_rows = Constraint::from_lengths(map_rows);
 
-            let game = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints(c_rows)
-                .split(chunks[0]);
+                    let map_columns = vec!(2; map.width.try_into().unwrap());
+                    let c_columns = Constraint::from_lengths(map_columns);
 
-            for (_, row) in game.iter().enumerate()  {
-                let cols  = Layout::default()
-                    .direction(Direction::Horizontal)
-                    .constraints(c_columns.clone())
-                    .split(*row);
+                    let game = Layout::default()
+                        .direction(Direction::Vertical)
+                        .constraints(c_rows)
+                        .split(chunks[0]);
 
-                for (_, col) in cols.iter().enumerate() {
-                    let color = rand::thread_rng().gen_range(0..NAMED_COLORS.len()); 
-                    let block = Paragraph::new("").bg(NAMED_COLORS[color]);
-                    frame.render_widget(block, *col)
-                }
+                    let data = load_from_memory(map.data).unwrap();
+
+                    for (r, row) in game.iter().enumerate()  {
+                        let cols  = Layout::default()
+                            .direction(Direction::Horizontal)
+                            .constraints(c_columns.clone())
+                            .split(*row);
+
+                        for (c, col) in cols.iter().enumerate() {
+                            let pixel = data.get_pixel(c.try_into().unwrap(), r.try_into().unwrap()).0;
+
+                            let mut color = Color::Yellow;
+
+                            if pixel[0] == 255 && pixel[1] == 0 && pixel[2] == 0 {
+                                color = Color::Red;
+                            } else if pixel[0] == 0 && pixel[1] == 255 && pixel[2] == 0 {
+                                color = Color::Green;
+                            } else if pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 255 {
+                                color = Color::Blue;
+                            } else if pixel[0] == 255 && pixel[1] == 0 && pixel[2] == 255 {
+                                color = Color::Magenta;
+                            } 
+
+                            let block = Paragraph::new("").bg(color);
+                            frame.render_widget(block, *col)
+                        }
+                    }
+
+                    let coords = Paragraph::new(format!("{:},{:} - {:}", player.pos.x, player.pos.y, map.name)).block(Block::default().title("Coords").borders(Borders::ALL).bg(Color::Black));
+                    frame.render_widget(coords, chunks[1]);
+                
+                    let cursor = Paragraph::new("").bg(Color::Yellow);
+                    frame.render_widget(cursor, Rect{x: player.pos.x, y: player.pos.y, width: 2, height: 1});
+                });
+            },
+            None => {
+                let _c = term.draw(|frame| {
+                     let chunks = Layout::default()
+                        .direction(Direction::Vertical)
+                        .constraints(
+                            [
+                                Constraint::Fill(1),
+                                Constraint::Length(3)
+                            ],
+                        )
+                        .split(frame.size());
+
+                    let coords = Paragraph::new(format!("({:},{:})", player.pos.x, player.pos.y)).block(Block::default().title("Coords").borders(Borders::ALL).bg(Color::Black));
+                    frame.render_widget(coords, chunks[1]);
+                
+                    let cursor = Paragraph::new("").bg(Color::Yellow);
+                    frame.render_widget(cursor, Rect{x: player.pos.x, y: player.pos.y, width: 2, height: 1});
+                });
             }
-
-            let coords = Paragraph::new(format!("({:},{:})", player.pos.x, player.pos.y)).block(Block::default().title("Coords").borders(Borders::ALL).bg(Color::Black));
-            frame.render_widget(coords, chunks[1]);
-            
-            let cursor = Paragraph::new("").bg(Color::Yellow);
-            frame.render_widget(cursor, Rect{x: player.pos.x, y: player.pos.y, width: 2, height: 1});
-        });
+        }
         Ok(())
     }
 }
