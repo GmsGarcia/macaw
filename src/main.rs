@@ -20,6 +20,9 @@ fn main() -> Result<(), Error> {
                         KeyCode::Char('k') => core.player_action("up".to_string()),
                         KeyCode::Char('l') => core.player_action("right".to_string()),
                         
+                        KeyCode::Char('r') => core.player_action("spawn".to_string()),
+                        KeyCode::Char('e') => core.player_action("despawn".to_string()),
+
                         KeyCode::Char('c') => core.player_action("clear".to_string()),
                         KeyCode::Char('q') => core.player_action("change".to_string()),
                         _ => ()

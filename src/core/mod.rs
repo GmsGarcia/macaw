@@ -2,27 +2,30 @@ mod render;
 mod player;
 mod map;
 
-use std::io::stdout;
-
-use crossterm::{cursor, execute};
-use render::Render;
+use render::Screen;
 use player::Player;
 use map::{Map, MapModel};
 
+pub struct GameData {
+    pub player: Player,
+    pub map: Map
+}
+
 pub struct Core {
-    render: Render,
+    screen: Screen,
     player: Player,
     map: Option<Map>
 }
 
 impl Core {
     pub fn new(name: String) -> Self {
-        let core = Core{
-            render: Render{},
+        let mut core = Core{
+            screen: Screen::new(),
             player: Player::new(name),
             map: Some(Map::new(MapModel::Default))
         };
-        let _ = core.render.init(&core.player, &core.map);
+        core.screen.clear();
+        core.screen.render(core.player.clone(), core.map.clone());
         core
     }
 
@@ -38,10 +41,12 @@ impl Core {
                     "down" => self.player.move_player(map, "down".to_string()),
                     "left" => self.player.move_player(map, "left".to_string()),
                     "right" => self.player.move_player(map, "right".to_string()),
-                    "clear" => self.render.clear(),
+                    "clear" => self.screen.clear(),
+                    "despawn" => self.player.despawn(),
+                    "spawn" => self.player.spawn(map),
                     "change" => {
                         self.load_map(if map.model == MapModel::Default { MapModel::Alternative } else { MapModel::Default });
-                        self.render.clear()
+                        self.player.toggle_color();
                     }
                     _ => todo!()
                 }
@@ -49,11 +54,11 @@ impl Core {
             None => todo!()
         };
 
-        execute!(stdout(), cursor::SavePosition).unwrap();
-        let _ = self.render.update(&self.player, &self.map);
+        self.screen.render(self.player.clone(), self.map.clone());
     }
 
-    pub fn resize(&self) {
-        let _ = self.render.update(&self.player, &self.map);
+    pub fn resize(&mut self) {
+        self.screen.clear();
+        self.screen.render(self.player.clone(), self.map.clone());
     }
 }
