@@ -22,68 +22,74 @@ impl Player {
         } 
     }
 
-    pub fn spawn(&mut self, map: &Map) {
-        let data = load_from_memory(map.collision).unwrap();
+    pub fn spawn(&mut self, map: &Option<Map>) {
+        if let Some(map) = map {
+            let data = load_from_memory(map.texture.collision).unwrap();
 
-        if !self.spawned {
-            while !self.spawned {
-                // get random pos
-                let x = rand::thread_rng().gen_range(0..map.width);
-                let y = rand::thread_rng().gen_range(0..map.height);
-                
-                let block = data.get_pixel(x, y).0;
+            if !self.spawned {
+                while !self.spawned {
+                    // get random pos
+                    let x = rand::thread_rng().gen_range(1..map.width);
+                    let y = rand::thread_rng().gen_range(1..map.height);
+                    
+                    let block = data.get_pixel(x, y).0;
 
-                if is_walkable(block) {
-                    self.pos = Point{x: (x*2).try_into().unwrap(), y: y.try_into().unwrap()};
-                    self.spawned = true;
+                    if is_walkable(block) {
+                        self.pos = Point{x: (x*2).try_into().unwrap(), y: y.try_into().unwrap()};
+                        self.spawned = true;
+                    }
                 }
+            } else {
+                self.despawn();
             }
         } 
     }
 
     pub fn despawn(&mut self) {
-        self.pos = Point{x: 0, y: 0};
+        self.pos = Point{x: 1, y: 1};
         self.spawned = false;
     }
 
-    pub fn move_player(&mut self, map: &Map, direction: String) {
-        let data = load_from_memory(map.collision).unwrap();
+    pub fn move_player(&mut self, map: &Option<Map>, direction: String) {
+        if let Some(map) = map {
+            let data = load_from_memory(map.texture.collision).unwrap();
 
-        if self.spawned {
-            match direction.as_str() {
-                "up" => {
-                    if self.pos.y > 0 {
-                        let next = data.get_pixel((self.pos.x/2).into(), (self.pos.y - 1).into()).0;
-                        if is_walkable(next) {
-                            self.pos.y -= 1;
+            if self.spawned {
+                match direction.as_str() {
+                    "up" => {
+                        if self.pos.y > 1 {
+                            let next = data.get_pixel((self.pos.x/2).into(), (self.pos.y - 1).into()).0;
+                            if is_walkable(next) {
+                                self.pos.y -= 1;
+                            }
                         }
-                    }
-                },
-                "down" => {
-                    if u32::from(self.pos.y) < map.height - 1 {
-                        let next = data.get_pixel((self.pos.x/2).into(), (self.pos.y + 1).into()).0;
-                        if is_walkable(next) {
-                            self.pos.y += 1;
+                    },
+                    "down" => {
+                        if u32::from(self.pos.y) < map.height - 1 {
+                            let next = data.get_pixel((self.pos.x/2).into(), (self.pos.y + 1).into()).0;
+                            if is_walkable(next) {
+                                self.pos.y += 1;
+                            }
                         }
-                    }
-                },
-                "left" => {
-                    if self.pos.x >= 2 {
-                        let next = data.get_pixel((self.pos.x/2 - 1).into(), self.pos.y.into()).0;
-                        if is_walkable(next) {
-                            self.pos.x -= 2;
+                    },
+                    "left" => {
+                        if self.pos.x >= 2 {
+                            let next = data.get_pixel((self.pos.x/2 - 1).into(), self.pos.y.into()).0;
+                            if is_walkable(next) {
+                                self.pos.x -= 2;
+                            }
                         }
-                    }
-                },
-                "right" => {
-                    if u32::from(self.pos.x) <= (map.width-2) * 2 {
-                        let next = data.get_pixel((self.pos.x/2 + 1).into(), self.pos.y.into()).0;
-                        if is_walkable(next) {
-                            self.pos.x += 2;
+                    },
+                    "right" => {
+                        if u32::from(self.pos.x) <= (map.width-2) * 2 {
+                            let next = data.get_pixel((self.pos.x/2 + 1).into(), self.pos.y.into()).0;
+                            if is_walkable(next) {
+                                self.pos.x += 2;
+                            }
                         }
-                    }
-                },
-                _ => {}
+                    },
+                    _ => {}
+                }
             }
         }
     }

@@ -26,7 +26,7 @@ impl Screen {
     }
 
     pub fn render(&mut self, mut player: Player, map: Option<Map>) {
-        self.terminal.draw(|frame| {
+        let _ = self.terminal.draw(|frame| {
             match map {
                 Some(map) => {
                     let mut game_data = GameData{ player: player.clone(), map: map.clone() };
@@ -35,7 +35,7 @@ impl Screen {
                     frame.render_stateful_widget(self.info.clone(), self.info.area, &mut player);
                 },
                 None => {
-
+                    frame.render_stateful_widget(self.info.clone(), self.info.area, &mut player);
                 }
             }
         });
@@ -66,7 +66,7 @@ pub struct Info {
 impl StatefulWidget for Window {
     type State = GameData;
 
-    fn render(self, area: Rect, buf: &mut Buffer, mut game_data: &mut Self::State) {
+    fn render(self, area: Rect, buf: &mut Buffer, game_data: &mut Self::State) {
         let map = &game_data.map;
         let player = &game_data.player;
 
@@ -82,9 +82,10 @@ impl StatefulWidget for Window {
             .split(area);
 
         // loads textures from mem
-        let texture = load_from_memory(map.texture).unwrap();
-        let upper_texture = load_from_memory(map.upper_texture).unwrap();
-
+        let texture = load_from_memory(map.texture.ground).unwrap();
+        let upper_texture = load_from_memory(map.texture.upper).unwrap();
+        let lower_texture = load_from_memory(map.texture.lower).unwrap();
+        
         // renders lower texture
         for (r, row) in game.iter().enumerate()  {
             let cols  = Layout::default()
@@ -100,11 +101,33 @@ impl StatefulWidget for Window {
                 block.render(*col, buf)
             }
         }
+        
+        // renders lower texture
+        for (r, row) in game.iter().enumerate()  {
+            let cols  = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints(c_columns.clone())
+                .split(*row);
+
+            for (c, col) in cols.iter().enumerate() {
+                let pixel = lower_texture.get_pixel(c.try_into().unwrap(), r.try_into().unwrap()).0;
+
+                if pixel == [0,0,0,0] {
+                    continue;
+                } else {
+                    let color = Color::Rgb { r: pixel[0], g: pixel[1], b: pixel[2] };
+                    let block = Paragraph::new("").bg(color);
+                    block.render(*col, buf)
+                }
+            }
+        }
 
         // renders cursor between lower and upper textures
         if player.spawned {
             let cursor = Paragraph::new("").bg(player.color);
             cursor.render(Rect{x: player.pos.x, y: player.pos.y, width: 2, height: 1}, buf);
+            let cursor = Paragraph::new("").bg(player.color);
+            cursor.render(Rect{x: player.pos.x, y: player.pos.y-1, width: 2, height: 1}, buf);
         }
 
         // renders upper texture
@@ -120,7 +143,14 @@ impl StatefulWidget for Window {
                 if pixel == [0,0,0,0] {
                     continue;
                 } else {
-                    let color = Color::Rgb { r: pixel[0], g: pixel[1], b: pixel[2] };
+                    let color: Color;
+                    if player.spawned && usize::from(player.pos.clone().x*2) == c && usize::from(player.pos.clone().y) == r {
+                        color = Color::Yellow;
+                    } else {
+                        color = Color::Rgb{ r: pixel[0], g: pixel[1], b: pixel[2] };
+                    }
+
+
                     let block = Paragraph::new("").bg(color);
                     block.render(*col, buf)
                 }

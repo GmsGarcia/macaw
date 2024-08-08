@@ -1,25 +1,21 @@
 use image::{load_from_memory, GenericImageView};
 
-#[derive(PartialEq, Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Map {
     pub name: String,
     pub model: MapModel,
-    pub texture: &'static [u8],
-    pub upper_texture: &'static [u8],
-    pub collision: &'static [u8],
+    pub texture: MapTexture,
     pub width: u32, 
     pub height: u32
 }
 
 impl Map {
-    pub fn new(map_model: MapModel) -> Self {
-        let map = load_from_memory(map_model.clone().get_collision()).unwrap();
+    pub fn new(model: MapModel) -> Self {
+        let map = load_from_memory(model.clone().get_collision()).unwrap();
         Map{
-            name: map_model.clone().get_name(),
-            model: map_model.clone(),
-            texture: map_model.clone().get_texture(),
-            upper_texture: map_model.clone().get_upper_texture(),
-            collision: map_model.clone().get_collision(),
+            name: model.clone().get_name(),
+            model: model.clone(),
+            texture: MapTexture::new(model),
             width: map.dimensions().0,
             height: map.dimensions().1
         }
@@ -27,9 +23,29 @@ impl Map {
 }
 
 #[derive(Clone, PartialEq)]
+pub struct MapTexture {
+    pub ground: &'static [u8],
+    pub upper: &'static [u8],
+    pub lower: &'static [u8],
+    pub collision: &'static [u8],
+}
+
+impl MapTexture {
+    fn new(model: MapModel) -> Self {
+        MapTexture {
+            ground: model.clone().get_ground_texture(),
+            upper: model.clone().get_upper_texture(),
+            lower: model.clone().get_lower_texture(),
+            collision: model.clone().get_collision()
+        }
+    }
+}
+
+#[derive(Clone, PartialEq)]
 pub enum MapModel {
     Default,
-    Alternative 
+    Alternative, 
+    House 
 }
 
 impl MapModel {
@@ -37,27 +53,39 @@ impl MapModel {
         match *self {
             MapModel::Default => "Default".to_string(),
             MapModel::Alternative => "Alternative".to_string(),
+            MapModel::House => "House".to_string(),
         }
     } 
     
-    fn get_texture(&self) -> &'static [u8] {
+    fn get_ground_texture(&self) -> &'static [u8] {
         match *self {
-            MapModel::Default => include_bytes!("./../maps/default.png"),
-            MapModel::Alternative => include_bytes!("./../maps/alternative.png"),
+            MapModel::Default => include_bytes!("./../maps/overworld/ground.png"),
+            MapModel::Alternative => include_bytes!("./../maps/alternative/ground.png"),
+            MapModel::House => include_bytes!("./../maps/house/ground.png"),
         }
     } 
 
     fn get_upper_texture(&self) -> &'static [u8] {
         match *self {
-            MapModel::Default => include_bytes!("./../maps/default_upper.png"),
-            MapModel::Alternative => include_bytes!("./../maps/alternative_upper.png"),
+            MapModel::Default => include_bytes!("./../maps/overworld/upper.png"),
+            MapModel::Alternative => include_bytes!("./../maps/alternative/upper.png"),
+            MapModel::House => include_bytes!("./../maps/house/upper.png"),
         }
     } 
+    
+    fn get_lower_texture(&self) -> &'static [u8] {
+        match *self {
+            MapModel::Default => include_bytes!("./../maps/overworld/lower.png"),
+            MapModel::Alternative => include_bytes!("./../maps/alternative/lower.png"),
+            MapModel::House => include_bytes!("./../maps/house/lower.png"),
+        }
+    }
 
     fn get_collision(&self) -> &'static [u8] {
         match *self {
-            MapModel::Default => include_bytes!("./../maps/default_collision.png"),
-            MapModel::Alternative => include_bytes!("./../maps/alternative_collision.png"),
+            MapModel::Default => include_bytes!("./../maps/overworld/collision.png"),
+            MapModel::Alternative => include_bytes!("./../maps/alternative/collision.png"),
+            MapModel::House => include_bytes!("./../maps/house/collision.png"),
         }
     }
 }
