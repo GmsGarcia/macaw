@@ -1,10 +1,27 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-void load_buf(char *filename);
+#define INITIAL_BUFFER_SIZE 1024
+#define BUFFER_SIZE_INCREMENT 1024
 
-void gen_new_buf();
+#include <stdio.h>
 
-void save_buf(char *filename, char *buffer);
+typedef struct {
+  char *data;
+  size_t size;
+  size_t length;
+} DynamicBuffer;
+
+void init_buf(DynamicBuffer *buf);
+
+void append_to_buf(DynamicBuffer *buf, const char *text, size_t len);
+
+void free_buf(DynamicBuffer *buf);
+
+void gen_new_buf(DynamicBuffer *buf);
+
+void read_file_to_buf(char *filename, DynamicBuffer *buf);
+
+void write_buf_to_file(char *filename, DynamicBuffer *buf);
 
 #endif

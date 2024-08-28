@@ -3,6 +3,7 @@
 #include "render.h"
 #include <ctype.h>
 #include <curses.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -20,27 +21,30 @@ void handle_input() {
     switch (c) {
     case KEY_LEFT:
     case 'h':
-      if (c_x > 1) {
-        c_x--;
+      if (cur_x > 0) {
+        cur_x--;
       }
       break;
     case KEY_DOWN:
     case 'j':
-      if (c_y < getmaxy(m_win) - 2) {
-        c_y++;
+      if (cur_y < m_max_height) {
+        cur_y++;
       }
       break;
     case KEY_UP:
     case 'k':
-      if (c_y > 1) {
-        c_y--;
+      if (cur_y > 0) {
+        cur_y--;
       }
       break;
     case KEY_RIGHT:
     case 'l':
-      if (c_x < getmaxx(m_win) - 2) {
-        c_x++;
+      if (cur_x < m_max_width) {
+        cur_x++;
       }
+      break;
+    case 'i':
+      mode = INSERT;
       break;
     case ':':
       mode = COMMAND;
@@ -51,6 +55,9 @@ void handle_input() {
     }
     break;
   case INSERT:
+    if (c == 27 || c == ctrl('c')) {
+      mode = NORMAL;
+    }
     break;
   case COMMAND:
     // ESC or CTRL-c
@@ -62,6 +69,13 @@ void handle_input() {
     } else if (c == 10) {
       if (strcmp(command, "q") == 0) {
         endwin();
+        exit(0);
+      } else if (strcmp(command, "w") == 0) {
+        sprintf(message, "TODO: implement save buffer");
+        memset(command, 0, sizeof(command));
+      } else if (strcmp(command, "wq") == 0) {
+        endwin();
+        printf("TODO: wq not saving to buffer yet.\n");
         exit(0);
       } else {
         sprintf(message, "Not an editor command: %s", command);
@@ -84,5 +98,5 @@ void handle_input() {
     break;
   }
 
-  wmove(m_win, c_y, c_x);
+  wmove(m_win, cur_y, cur_x);
 }

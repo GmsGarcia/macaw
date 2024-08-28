@@ -3,4 +3,6 @@
 
 void handle_input();
 
+void handle_command();
+
 #endif
