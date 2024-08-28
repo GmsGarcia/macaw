@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="#description">Description</a> •
-  <a href="#goals">Goals</a>
+  <a href="#goals">Goals</a> •
   <a href="#screenshots">Screenshots</a>
 </p>
 
