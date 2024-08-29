@@ -7,6 +7,7 @@
 enum MODE mode = NORMAL;
 const char MODE_NAME[3][15] = {"NORMAL", "INSERT", "COMMAND"};
 
+char *filename;
 char *f_name;
 DynamicBuffer f_buf;
 

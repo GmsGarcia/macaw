@@ -6,3 +6,5 @@ Simple Vim copycat developed in C :PP
 
 - fix backspace and delete on INSERT mode;
 - fix buffer size to correct string size;
+
+- fix new buffer

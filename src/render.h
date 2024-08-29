@@ -6,6 +6,7 @@
 extern WINDOW *m_win;
 extern WINDOW *c_win;
 extern WINDOW *b_win;
+extern WINDOW *t_win;
 
 extern int m_height, m_width, m_y, m_x;
 extern int b_height, b_width, b_y, b_x;
