@@ -12,6 +12,8 @@ typedef struct {
   size_t length;
 } DynamicBuffer;
 
+extern char *filename;
+
 void init_buf(DynamicBuffer *buf);
 
 void append_to_buf(DynamicBuffer *buf, const char *text, size_t len);
@@ -22,6 +24,10 @@ void gen_new_buf(DynamicBuffer *buf);
 
 void read_file_to_buf(char *filename, DynamicBuffer *buf);
 
-void write_buf_to_file(char *filename, DynamicBuffer *buf);
+void write_buf_to_file(DynamicBuffer *buf);
+
+int get_buf_height();
+
+int get_line_length(int cur_x);
 
 #endif

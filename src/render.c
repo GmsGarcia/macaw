@@ -1,5 +1,6 @@
 #include "render.h"
 #include "editor.h"
+#include "utils.h"
 #include <curses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,15 +26,12 @@ void init_render() {
     printf("Your terminal doesn't support colors\n");
     exit(1);
   }
-  start_color();
 
-  init_pair(1, COLOR_BLACK, COLOR_GREEN);
-  init_pair(2, COLOR_BLACK, COLOR_CYAN);
-  init_pair(3, COLOR_BLACK, COLOR_RED);
+  init_colors();
 
-  m_height = LINES - 3, m_width = COLS - 4, m_y = 0, m_x = 4;
-  c_height = LINES - 3, c_width = 4, c_y = 0, c_x = 0;
-  b_height = 3, b_width = COLS, b_y = LINES - 3, b_x = 0;
+  m_height = LINES - 2, m_width = COLS - 4, m_y = 0, m_x = 4;
+  c_height = LINES - 2, c_width = 4, c_y = 0, c_x = 0;
+  b_height = 2, b_width = COLS, b_y = LINES - 2, b_x = 0;
 
   noecho();
   curs_set(2);
@@ -41,9 +39,6 @@ void init_render() {
   m_win = newwin(m_height, m_width, m_y, m_x);
   c_win = newwin(c_height, c_width, c_y, c_x);
   b_win = newwin(b_height, b_width, b_y, b_x);
-
-  // wborder(m_win, 0, 0, 0, 0, 0, 0, 0, 0);
-  wborder(b_win, 0, 0, 0, 0, 0, 0, 0, 0);
 
   wmove(m_win, cur_y, cur_x);
 
@@ -63,42 +58,42 @@ void render() {
   werase(c_win);
   werase(b_win);
 
-  // wborder(m_win, 0, 0, 0, 0, 0, 0, 0, 0);
-  wborder(b_win, 0, 0, 0, 0, 0, 0, 0, 0);
-
   render_buf();
 
-  char cur_pos[20];
-  sprintf(cur_pos, " %d:%d ", cur_y, cur_x);
-  int cur_pos_size = getmaxx(b_win) - strlen(cur_pos) - 4;
+  char cur_pos[30];
+  sprintf(cur_pos, " %d:%d ", cur_y + 1, cur_x + 1);
+  int cur_pos_size = getmaxx(b_win) - strlen(cur_pos) - 2;
 
+  wbkgd(b_win, COLOR_PAIR(14));
   // TODO: somehow remove this redundancy
   switch (mode) {
   case NORMAL:
-    wattron(b_win, COLOR_PAIR(1));
+    wattron(b_win, COLOR_PAIR(7));
     if (strlen(message) > 0) {
-      mvwprintw(b_win, 1, 2, " %s - %s ", MODE_NAME[mode], message);
+      mvwprintw(b_win, 0, 0, " %s > %s - %s ", MODE_NAME[mode], f_name,
+                message);
     } else {
-      mvwprintw(b_win, 1, 2, " %s ", MODE_NAME[mode]);
+      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
     }
-    mvwprintw(b_win, 1, cur_pos_size, " %s ", cur_pos);
-    wattroff(b_win, COLOR_PAIR(1));
+    mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
+    wattroff(b_win, COLOR_PAIR(7));
     break;
   case INSERT:
-    wattron(b_win, COLOR_PAIR(2));
+    wattron(b_win, COLOR_PAIR(9));
     if (strlen(message) > 0) {
-      mvwprintw(b_win, 1, 2, " %s - %s ", MODE_NAME[mode], message);
+      mvwprintw(b_win, 0, 0, " %s > %s - %s ", MODE_NAME[mode], f_name,
+                message);
     } else {
-      mvwprintw(b_win, 1, 2, " %s ", MODE_NAME[mode]);
+      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
     }
-    mvwprintw(b_win, 1, cur_pos_size, " %s ", cur_pos);
-    wattroff(b_win, COLOR_PAIR(2));
+    mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
+    wattroff(b_win, COLOR_PAIR(9));
     break;
   case COMMAND:
-    wattron(b_win, COLOR_PAIR(3));
-    mvwprintw(b_win, 1, 2, " %s :%s ", MODE_NAME[mode], command);
-    mvwprintw(b_win, 1, cur_pos_size, " %s ", cur_pos);
-    wattroff(b_win, COLOR_PAIR(3));
+    wattron(b_win, COLOR_PAIR(11));
+    mvwprintw(b_win, 0, 0, " %s > %s :%s ", MODE_NAME[mode], f_name, command);
+    mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
+    wattroff(b_win, COLOR_PAIR(11));
     break;
   }
 
@@ -117,14 +112,13 @@ void render_buf() {
   int current_line_length = 0;
 
   // Iterate through the buffer data and render each character
-  mvwprintw(c_win, y, 0, "%d", y);
+  mvwprintw(c_win, y, 0, "%d", y + 1);
   for (size_t i = 0; i < f_buf.length; i++) {
     char ch = f_buf.data[i];
 
     // Handle newlines and reset position
     if (ch == '\n' || current_line_length >= max_x) {
-      mvwprintw(c_win, y, 0, "%d", y);
-      mvwprintw(c_win, y, 2, "|");
+      mvwprintw(c_win, y, 0, "%d", y + 1);
       y++;
       x = 0;
       current_line_length = 0;

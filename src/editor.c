@@ -13,7 +13,7 @@ DynamicBuffer f_buf;
 char command[50];
 char message[255];
 
-int cur_y = 0, cur_x = 0;
+int cur_y = 0, cur_x = 0, cur_line = 0;
 
 void init_macaw(int argc, char *argv[]) {
   if (argc >= 2) {
