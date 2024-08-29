@@ -78,28 +78,30 @@ void render() {
     wattron(b_win, COLOR_PAIR(7));
     if (strlen(message) > 0) {
       mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], filename);
-      mvwprintw(t_win, 0, 0, " %s ", message);
     } else {
       mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], filename);
     }
     mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
+    mvwprintw(t_win, 0, 0, "%s ", message);
     wattroff(b_win, COLOR_PAIR(7));
     break;
   case INSERT:
     wattron(b_win, COLOR_PAIR(9));
     if (strlen(message) > 0) {
       mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], filename);
-      mvwprintw(t_win, 0, 0, " %s ", message);
+      mvwprintw(t_win, 0, 0, "%s ", message);
     } else {
       mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], filename);
     }
     mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
+    mvwprintw(t_win, 0, 0, "%s ", message);
     wattroff(b_win, COLOR_PAIR(9));
     break;
   case COMMAND:
     wattron(b_win, COLOR_PAIR(11));
-    mvwprintw(b_win, 0, 0, " %s > %s :%s ", MODE_NAME[mode], filename, command);
+    mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], filename);
     mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
+    mvwprintw(t_win, 0, 0, ":%s ", command);
     wattroff(b_win, COLOR_PAIR(11));
     break;
   }
