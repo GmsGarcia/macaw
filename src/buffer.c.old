@@ -1,0 +1,141 @@
+void insert_char_to_buf(DynamicBuffer *buf, int x, int y, char c) {
+  // Ensure the y index is within the current line count, append new lines if
+  // necessary
+  if (y >= buf->line_count) {
+    // Add new empty lines
+    while (y >= buf->line_count) {
+      buf->data[buf->line_count] = malloc(BUFFER_SIZE_INCREMENT);
+      if (!buf->data[buf->line_count]) {
+        endwin();
+        printf("Failed to allocate memory for new line\n");
+        exit(EXIT_FAILURE);
+      }
+      buf->data[buf->line_count][0] = ' '; // Initialize with an empty string
+      buf->line_count++;
+    }
+  }
+
+  // Get the line to modify
+  char *line = buf->data[y];
+  size_t line_length = strlen(line);
+
+  // Clamp x to the length of the line
+  if (x > (int)line_length) {
+    x = (int)line_length;
+  }
+  if (x < 0) {
+    x = 0; // Optionally handle negative x values
+  }
+
+  // Allocate new memory for the line with room for the new character
+  size_t new_length =
+      line_length + 2; // +1 for the new char, +1 for the null terminator
+  char *new_line = realloc(line, new_length);
+  if (!new_line) {
+    endwin();
+    printf("Failed to reallocate memory for line\n");
+    exit(EXIT_FAILURE);
+  }
+
+  // Shift characters to the right to make space for the new character
+  memmove(new_line + x + 1, new_line + x, line_length - x + 1);
+  new_line[x] = c;         // Insert the new character
+  buf->data[y] = new_line; // Update the buffer's line pointer
+}
+
+// backspace
+void delete_prev_char_from_buf(DynamicBuffer *buf, int x, int y) {
+  // if x == 0 && key_backspace -> join current line with previous
+  if (y >= buf->line_count) {
+    return; // Line number is out of range
+  }
+
+  // Get the line to modify
+  char *line = buf->data[y];
+  size_t line_length = strlen(line);
+
+  // Adjust x if it's beyond the current length of the line
+  if (x >= (int)line_length) {
+    x = (int)line_length - 1;
+  }
+
+  if (x > 0) {
+    // Shift characters to the left
+    memmove(line + x - 1, line + x, line_length - x + 1);
+    // Reallocate memory if needed
+    char *new_line = realloc(line, line_length);
+    if (!new_line) {
+      endwin();
+      printf("Failed to reallocate memory for line\n");
+      exit(EXIT_FAILURE);
+    }
+    buf->data[y] = new_line;
+  } else {
+    // If x is 0, simply remove the first character
+    size_t new_length = line_length - 1;
+    char *new_line = realloc(line, new_length + 1);
+    if (!new_line) {
+      endwin();
+      printf("Failed to reallocate memory for line\n");
+      exit(EXIT_FAILURE);
+    }
+    memmove(new_line, new_line + 1, new_length);
+    new_line[new_length] = '\0';
+    buf->data[y] = new_line;
+  }
+}
+
+// delete
+void delete_cur_char_from_buf(DynamicBuffer *buf, int x, int y) {
+  if (y >= buf->line_count) {
+    return; // Line number is out of range
+  }
+
+  // Get the line to modify
+  char *line = buf->data[y];
+  size_t line_length = strlen(line);
+
+  // Adjust x if it's beyond the current length of the line
+  if (x >= (int)line_length) {
+    x = (int)line_length - 1;
+  }
+
+  // Shift characters to the left
+  if (x < (int)line_length - 1) {
+    memmove(line + x, line + x + 1, line_length - x);
+    // Reallocate memory if needed
+    char *new_line = realloc(line, line_length);
+    if (!new_line) {
+      endwin();
+      printf("Failed to reallocate memory for line\n");
+      exit(EXIT_FAILURE);
+    }
+    buf->data[y] = new_line;
+  } else {
+    // If x is the last character, simply reduce the length
+
+    if (line_length > 1) {
+
+    } else {
+      size_t new_length = line_length - 1;
+      char *new_line = realloc(line, new_length + 1);
+      if (!new_line) {
+        endwin();
+        printf("Failed to reallocate memory for line\n");
+        exit(EXIT_FAILURE);
+      }
+      new_line[new_length] = '\0';
+      buf->data[y] = new_line;
+    }
+
+    size_t new_length = line_length - 1;
+    char *new_line = realloc(line, new_length + 1);
+    if (!new_line) {
+      endwin();
+      printf("Failed to reallocate memory for line\n");
+      exit(EXIT_FAILURE);
+    }
+    new_line[new_length] = '\0';
+    buf->data[y] = new_line;
+  }
+}

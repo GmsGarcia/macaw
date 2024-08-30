@@ -1,7 +1,7 @@
 #include "render.h"
 #include "buffer.h"
+#include "color.h"
 #include "editor.h"
-#include "utils.h"
 #include <curses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,7 +39,6 @@ void init_render() {
   t_height = 1, t_width = COLS, t_y = LINES - 1, t_x = 0;
 
   noecho();
-  curs_set(2);
 
   m_win = newwin(m_height, m_width, m_y, m_x);
   c_win = newwin(c_height, c_width, c_y, c_x);
@@ -54,6 +53,8 @@ void init_render() {
 
   m_max_width = getmaxx(m_win) - 1;
   m_max_height = getmaxy(m_win) - 1;
+
+  curs_set(2);
 
   render();
 }
@@ -77,9 +78,9 @@ void render() {
   case NORMAL:
     wattron(b_win, COLOR_PAIR(7));
     if (strlen(message) > 0) {
-      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], filename);
+      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
     } else {
-      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], filename);
+      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
     }
     mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
     mvwprintw(t_win, 0, 0, "%s ", message);
@@ -88,10 +89,10 @@ void render() {
   case INSERT:
     wattron(b_win, COLOR_PAIR(9));
     if (strlen(message) > 0) {
-      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], filename);
+      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
       mvwprintw(t_win, 0, 0, "%s ", message);
     } else {
-      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], filename);
+      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
     }
     mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
     mvwprintw(t_win, 0, 0, "%s ", message);
@@ -99,7 +100,7 @@ void render() {
     break;
   case COMMAND:
     wattron(b_win, COLOR_PAIR(11));
-    mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], filename);
+    mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
     mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
     mvwprintw(t_win, 0, 0, ":%s ", command);
     wattroff(b_win, COLOR_PAIR(11));
@@ -112,7 +113,10 @@ void render() {
   wrefresh(t_win);
 
   wmove(m_win, cur_y, cur_x);
-  curs_set(2);
+
+  if (mode != COMMAND) {
+    curs_set(2);
+  }
 }
 
 void render_buf() {
@@ -123,7 +127,7 @@ void render_buf() {
   // Iterate through the buffer data and render each character
   mvwprintw(c_win, y, 0, "%d", y + 1);
 
-  for (size_t i = 0; i < f_buf.line_count; i++) {
+  for (size_t i = 0; i < f_buf.size; i++) {
     char *line = f_buf.data[i];
     size_t line_length = strlen(line);
     size_t current_line_length = 0;

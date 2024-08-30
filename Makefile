@@ -11,7 +11,7 @@ LIBS = -lncurses
 OUTPUT = output/editor
 
 # Source files
-SRCS = main.c src/editor.c src/buffer.c src/input.c src/render.c src/utils.c
+SRCS = main.c src/editor.c src/buffer.c src/input.c src/render.c src/color.c
 
 # Object files (replace .c with output/.o)
 OBJS = $(SRCS:%.c=output/%.o)

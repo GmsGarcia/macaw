@@ -1,5 +1,5 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef COLOR_H
+#define COLOR_H
 
 void init_colors();
 

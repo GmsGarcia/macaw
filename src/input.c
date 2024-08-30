@@ -12,6 +12,11 @@
 
 void handle_input() {
   int c = wgetch(m_win);
+  int c_len = get_line_length(cur_y) - 2;
+
+  if (c_len <= 0) {
+    c_len = 0;
+  }
 
   if (isalpha(c)) {
     c = tolower(c);
@@ -29,11 +34,14 @@ void handle_input() {
     case KEY_DOWN:
     case 'j':
       // buf size
-      if (cur_y < get_buf_height()) {
+      if (cur_y < f_buf.size - 1) {
         cur_y++;
-        int c_len = get_line_length(cur_y);
+        c_len = get_line_length(cur_y) - 2;
         if (cur_x > c_len) {
           cur_x = c_len;
+        }
+        if (c_len <= 0) {
+          cur_x = 0;
         }
       }
       break;
@@ -41,17 +49,28 @@ void handle_input() {
     case 'k':
       if (cur_y > 0) {
         cur_y--;
-        int c_len = get_line_length(cur_y);
+        c_len = get_line_length(cur_y) - 2;
         if (cur_x > c_len) {
           cur_x = c_len;
+        }
+        if (c_len <= 0) {
+          cur_x = 0;
         }
       }
       break;
     case KEY_RIGHT:
     case 'l':
-      if (cur_x < get_line_length(cur_y)) {
+      if (cur_x < c_len) {
         cur_x++;
       }
+      break;
+      // switch to 0
+    case 'b':
+      cur_x = 0;
+      break;
+      // switch to $
+    case 'w':
+      cur_x = c_len;
       break;
     case 'i':
       mode = INSERT;
@@ -60,12 +79,20 @@ void handle_input() {
       cur_x++;
       mode = INSERT;
       break;
+    case 'o':
+      mode = INSERT;
+      add_line_to_buf(&f_buf, cur_y);
+      cur_y += 1;
+      cur_x = 0;
+      break;
+    case 'x':
+      delete_cur_char_from_buf(&f_buf, cur_x, cur_y);
+      break;
     case ctrl('d'):
       remove_line_from_buf(&f_buf, cur_y);
       break;
     case ':':
       mode = COMMAND;
-      curs_set(0);
       keypad(stdscr, FALSE);
       keypad(m_win, FALSE);
       memset(message, 0, sizeof(message));
@@ -77,10 +104,11 @@ void handle_input() {
     case 27:
     case ctrl('c'):
       mode = NORMAL;
+      cur_x--;
       break;
     case KEY_BACKSPACE:
-      int prev_line = get_line_length(cur_y - 1);
-      delete_char_left_from_buf(&f_buf, cur_x, cur_y);
+      int prev_line = get_line_length(cur_y - 1) - 2;
+      delete_prev_char_from_buf(&f_buf, cur_x, cur_y);
       if (cur_x <= 0) {
         cur_y -= 1;
         cur_x = prev_line;
@@ -89,11 +117,10 @@ void handle_input() {
       }
       break;
     case KEY_DC:
-      delete_char_right_from_buf(&f_buf, cur_x, cur_y);
+      delete_cur_char_from_buf(&f_buf, cur_x, cur_y);
       break;
-
     case 10:
-      insert_char_to_buf(&f_buf, cur_x, cur_y, c);
+      insert_new_line_to_buf(&f_buf, cur_x, cur_y);
       cur_y += 1;
       cur_x = 0;
       break;
@@ -106,10 +133,8 @@ void handle_input() {
   case COMMAND:
     // ESC or CTRL-c
     if (c == 27 || c == ctrl('c')) {
-      curs_set(2);
       mode = NORMAL;
       memset(command, 0, sizeof(command));
-
       // CARRIAGE RETURN
     } else if (c == 10) {
       if (strcmp(command, "q") == 0) {
@@ -117,7 +142,7 @@ void handle_input() {
         exit(0);
       } else if (strcmp(command, "w") == 0) {
         write_buf_to_file(&f_buf, f_name);
-        sprintf(message, "\"%s\" %zuL, %zuB written", f_name, f_buf.line_count,
+        sprintf(message, "\"%s\" %zuL, %zuB written", f_name, f_buf.size,
                 f_buf.bytes);
         memset(command, 0, sizeof(command));
       } else if (strcmp(command, "wq") == 0) {
