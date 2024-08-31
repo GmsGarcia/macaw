@@ -133,12 +133,12 @@ void render_buf() {
     size_t current_line_length = 0;
     size_t x = 0;
 
+    mvwprintw(c_win, y, 0, "%d", (int)i + 1);
     for (size_t j = 0; j < line_length; j++) {
       char ch = line[j];
 
       // Handle newline or line wrapping
       if (current_line_length >= max_x) {
-        mvwprintw(c_win, y, 0, "%d", y + 1);
         y++;
         x = 0;
         current_line_length = 0;
@@ -156,7 +156,6 @@ void render_buf() {
     }
 
     // Move to the next line in the terminal window
-    mvwprintw(c_win, y, 0, "%d", y + 1);
     y++;
 
     // Stop rendering if we reach the bottom of the window

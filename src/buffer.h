@@ -28,11 +28,11 @@ void write_buf_to_file(DynamicBuffer *buf, char *path);
 
 void insert_char_to_buf(DynamicBuffer *buf, int cur_x, int cur_y, char c);
 
-void insert_new_line_to_buf(DynamicBuffer *buf, int cur_x, int cur_y);
+void insert_new_line_char_to_buf(DynamicBuffer *buf, int cur_x, int cur_y);
 
-void delete_prev_char_from_buf(DynamicBuffer *buf, int cur_x, int cur_y);
+void remove_prev_char_from_buf(DynamicBuffer *buf, int cur_x, int cur_y);
 
-void delete_cur_char_from_buf(DynamicBuffer *buf, int cur_x, int cur_y);
+void remove_cur_char_from_buf(DynamicBuffer *buf, int cur_x, int cur_y);
 
 void remove_line_from_buf(DynamicBuffer *buf, int cur_y);
 

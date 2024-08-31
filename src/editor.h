@@ -7,6 +7,7 @@ extern const char MODE_NAME[3][15];
 
 extern enum MODE mode;
 extern char *f_name;
+extern char *f_path;
 extern DynamicBuffer f_buf;
 
 extern char command[50];

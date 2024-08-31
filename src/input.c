@@ -2,7 +2,6 @@
 #include "buffer.h"
 #include "editor.h"
 #include "render.h"
-#include <ctype.h>
 #include <curses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,14 +12,12 @@
 void handle_input() {
   int c = wgetch(m_win);
   int c_len = get_line_length(cur_y) - 2;
+  int prev_line;
 
   if (c_len <= 0) {
     c_len = 0;
   }
-
-  if (isalpha(c)) {
-    c = tolower(c);
-  }
+  // remove this to implement keybinds to capitalized keys [CAPS LOCK]
 
   switch (mode) {
   case NORMAL:
@@ -34,7 +31,7 @@ void handle_input() {
     case KEY_DOWN:
     case 'j':
       // buf size
-      if (cur_y < f_buf.size - 1) {
+      if ((size_t)cur_y < f_buf.size - 1) {
         cur_y++;
         c_len = get_line_length(cur_y) - 2;
         if (cur_x > c_len) {
@@ -85,8 +82,13 @@ void handle_input() {
       cur_y += 1;
       cur_x = 0;
       break;
+    case 'O':
+      mode = INSERT;
+      add_line_to_buf(&f_buf, cur_y - 1);
+      cur_x = 0;
+      break;
     case 'x':
-      delete_cur_char_from_buf(&f_buf, cur_x, cur_y);
+      remove_cur_char_from_buf(&f_buf, cur_x, cur_y);
       break;
     case ctrl('d'):
       remove_line_from_buf(&f_buf, cur_y);
@@ -104,11 +106,19 @@ void handle_input() {
     case 27:
     case ctrl('c'):
       mode = NORMAL;
-      cur_x--;
+      if (cur_x > 1) {
+        cur_x--;
+      }
+      break;
+      // TAB
+    case 9:
+      insert_char_to_buf(&f_buf, cur_x, cur_y, ' ');
+      insert_char_to_buf(&f_buf, cur_x, cur_y, ' ');
+      cur_x += 2;
       break;
     case KEY_BACKSPACE:
-      int prev_line = get_line_length(cur_y - 1) - 2;
-      delete_prev_char_from_buf(&f_buf, cur_x, cur_y);
+      prev_line = get_line_length(cur_y - 1) - 1;
+      remove_prev_char_from_buf(&f_buf, cur_x, cur_y);
       if (cur_x <= 0) {
         cur_y -= 1;
         cur_x = prev_line;
@@ -117,10 +127,10 @@ void handle_input() {
       }
       break;
     case KEY_DC:
-      delete_cur_char_from_buf(&f_buf, cur_x, cur_y);
+      remove_cur_char_from_buf(&f_buf, cur_x, cur_y);
       break;
     case 10:
-      insert_new_line_to_buf(&f_buf, cur_x, cur_y);
+      insert_new_line_char_to_buf(&f_buf, cur_x, cur_y);
       cur_y += 1;
       cur_x = 0;
       break;
@@ -141,12 +151,10 @@ void handle_input() {
         endwin();
         exit(0);
       } else if (strcmp(command, "w") == 0) {
-        write_buf_to_file(&f_buf, f_name);
-        sprintf(message, "\"%s\" %zuL, %zuB written", f_name, f_buf.size,
-                f_buf.bytes);
+        write_buf_to_file(&f_buf, f_path);
         memset(command, 0, sizeof(command));
       } else if (strcmp(command, "wq") == 0) {
-        write_buf_to_file(&f_buf, f_name);
+        write_buf_to_file(&f_buf, f_path);
         endwin();
         exit(0);
       } else {
