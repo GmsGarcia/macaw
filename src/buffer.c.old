@@ -1,4 +1,4 @@
-// backspace
+// backspace .
 void delete_prev_char_from_buf(DynamicBuffer *buf, int x, int y) {
   // if x == 0 && key_backspace -> join current line with previous
   if (y >= buf->line_count) {
