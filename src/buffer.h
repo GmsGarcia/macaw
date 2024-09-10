@@ -40,4 +40,8 @@ void add_line_to_buf(DynamicBuffer *buf, int cur_y);
 
 int get_line_length(int cur_y);
 
+int can_go_to_x(int x, int y);
+
+int can_go_to_y(int y);
+
 #endif

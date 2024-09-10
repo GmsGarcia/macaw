@@ -22,8 +22,15 @@ void init_macaw(int argc, char *argv[]) {
 
   if (argc >= 2) {
     f_path = argv[1];
-    f_name = strrchr(f_path, '/') + 1;
+    if (strrchr(f_path, '/') != NULL) {
+      f_name = strrchr(f_path, '/') + 1;
+    } else {
+      f_name = f_path;
+    }
     read_file_to_buf(&f_buf, f_path);
+  } else {
+    f_path = "new_file.txt";
+    f_name = "new_file.txt";
   }
 
   run();

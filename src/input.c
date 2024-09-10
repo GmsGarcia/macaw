@@ -11,29 +11,31 @@
 
 void handle_input() {
   int c = wgetch(m_win);
-  int c_len = get_line_length(cur_y) - 2;
+  int c_len = get_line_length(cur_y) - 1;
   int prev_line;
 
   if (c_len <= 0) {
     c_len = 0;
   }
-  // remove this to implement keybinds to capitalized keys [CAPS LOCK]
 
   switch (mode) {
   case NORMAL:
     switch (c) {
     case KEY_LEFT:
     case 'h':
-      if (cur_x > 0) {
+      if (can_go_to_x(cur_x-1, cur_y)) {
         cur_x--;
       }
       break;
     case KEY_DOWN:
     case 'j':
       // buf size
-      if ((size_t)cur_y < f_buf.size - 1) {
+      if (can_go_to_y(cur_y+1)) {
         cur_y++;
         c_len = get_line_length(cur_y) - 2;
+        if (c_len <= 0) {
+          c_len = 0;
+        }
         if (cur_x > c_len) {
           cur_x = c_len;
         }
@@ -44,9 +46,12 @@ void handle_input() {
       break;
     case KEY_UP:
     case 'k':
-      if (cur_y > 0) {
+      if (can_go_to_y(cur_y-1)) {
         cur_y--;
         c_len = get_line_length(cur_y) - 2;
+        if (c_len <= 0) {
+          c_len = 0;
+        }
         if (cur_x > c_len) {
           cur_x = c_len;
         }
@@ -57,7 +62,7 @@ void handle_input() {
       break;
     case KEY_RIGHT:
     case 'l':
-      if (cur_x < c_len) {
+      if (can_go_to_x(cur_x, cur_y)) {
         cur_x++;
       }
       break;
@@ -67,13 +72,15 @@ void handle_input() {
       break;
       // switch to $
     case 'w':
-      cur_x = c_len;
+      cur_x = c_len-1;
       break;
     case 'i':
       mode = INSERT;
       break;
     case 'a':
-      cur_x++;
+      if (get_line_length(cur_y) > 1) {
+        cur_x++;
+      } 
       mode = INSERT;
       break;
     case 'o':
@@ -92,6 +99,9 @@ void handle_input() {
       break;
     case ctrl('d'):
       remove_line_from_buf(&f_buf, cur_y);
+      if (cur_y >= f_buf.size - 1 && cur_y > 0) {
+        cur_y--;
+      }
       break;
     case ':':
       mode = COMMAND;
@@ -117,6 +127,9 @@ void handle_input() {
       cur_x += 2;
       break;
     case KEY_BACKSPACE:
+      if (cur_y <= 0 && cur_x <= 0) {
+        return;
+      }
       prev_line = get_line_length(cur_y - 1) - 1;
       remove_prev_char_from_buf(&f_buf, cur_x, cur_y);
       if (cur_x <= 0) {
@@ -127,6 +140,9 @@ void handle_input() {
       }
       break;
     case KEY_DC:
+      if (cur_y >= f_buf.size - 1 && cur_x >= get_line_length(cur_y)-1) {
+        return;
+      }
       remove_cur_char_from_buf(&f_buf, cur_x, cur_y);
       break;
     case 10:

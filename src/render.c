@@ -79,6 +79,7 @@ void render() {
     wattron(b_win, COLOR_PAIR(7));
     if (strlen(message) > 0) {
       mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
+      mvwprintw(t_win, 0, 0, "%s ", message);
     } else {
       mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
     }
