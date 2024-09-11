@@ -149,7 +149,7 @@ void insert_new_line_char_to_buf(DynamicBuffer *buf, int cur_x, int cur_y) {
   }
 
   // setting new lines and null characters
-  buf->data[cur_y][cur_x + 1] = '\n';
+  buf->data[cur_y][cur_x] = '\n';
   buf->data[cur_y][cur_x + 1] = '\0';
 }
 
@@ -220,13 +220,10 @@ void remove_line_from_buf(DynamicBuffer *buf, int cur_y) {
       exit(EXIT_FAILURE);
     }
   } else {
-    buf->data[cur_y] = malloc(1 * sizeof(char *));
-    buf->data[cur_y][0] = '\0';
+    buf->data[cur_y] = malloc(2 * sizeof(char *));
+    buf->data[cur_y][0] = '\n'; 
+    buf->data[cur_y][1] = '\0';
   }
-}
-
-void empty_line(DynamicBuffer *buf, int cur_y) {
-
 }
 
 void add_line_to_buf(DynamicBuffer *buf, int cur_y) {

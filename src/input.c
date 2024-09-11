@@ -98,9 +98,12 @@ void handle_input() {
       remove_cur_char_from_buf(&f_buf, cur_x, cur_y);
       break;
     case ctrl('d'):
+          // empty line if is cur_y = 0
       remove_line_from_buf(&f_buf, cur_y);
       if (cur_y >= f_buf.size - 1 && cur_y > 0) {
         cur_y--;
+      } else {
+        cur_x = 0;
       }
       break;
     case ':':
