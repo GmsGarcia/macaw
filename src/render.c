@@ -20,6 +20,8 @@ int t_height, t_width, t_y, t_x;
 
 int m_max_height, m_max_width;
 
+int vport_start_y, vport_height;
+
 int colors = 0;
 
 void init_render() {
@@ -45,14 +47,17 @@ void init_render() {
   b_win = newwin(b_height, b_width, b_y, b_x);
   t_win = newwin(t_height, t_width, t_y, t_x);
 
-  wmove(m_win, cur_y, cur_x);
+  wmove(m_win, cur_y - vport_start_y, cur_x);
 
   raw();
   keypad(stdscr, TRUE);
   keypad(m_win, TRUE);
 
   m_max_width = getmaxx(m_win) - 1;
-  m_max_height = getmaxy(m_win) - 1;
+  m_max_height = getmaxy(m_win);
+
+  vport_start_y = cur_y;
+  vport_height = m_height;
 
   curs_set(2);
 
@@ -81,7 +86,8 @@ void render() {
       mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
       mvwprintw(t_win, 0, 0, "%s ", message);
     } else {
-      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
+      int c_len = get_line_length(cur_y) - 1;
+      mvwprintw(b_win, 0, 0, " %s > %s - c_len: %d", MODE_NAME[mode], f_name, c_len);
     }
     mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
     mvwprintw(t_win, 0, 0, "%s ", message);
@@ -113,7 +119,7 @@ void render() {
   wrefresh(b_win);
   wrefresh(t_win);
 
-  wmove(m_win, cur_y, cur_x);
+  wmove(m_win, cur_y - vport_start_y, cur_x);
 
   if (mode != COMMAND) {
     curs_set(2);
@@ -128,7 +134,7 @@ void render_buf() {
   // Iterate through the buffer data and render each character
   mvwprintw(c_win, y, 0, "%d", y + 1);
 
-  for (size_t i = 0; i < f_buf.size; i++) {
+  for (size_t i = vport_start_y; i < vport_start_y + vport_height && i < f_buf.size; i++) {
     char *line = f_buf.data[i];
     size_t line_length = strlen(line);
     size_t current_line_length = 0;
@@ -166,5 +172,5 @@ void render_buf() {
   }
 
   // Move the cursor back to the current editing position
-  wmove(m_win, cur_y, cur_x);
+  wmove(m_win, cur_y - vport_start_y, cur_x);
 }

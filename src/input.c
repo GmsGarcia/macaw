@@ -23,41 +23,32 @@ void handle_input() {
     switch (c) {
     case KEY_LEFT:
     case 'h':
-      if (can_go_to_x(cur_x-1, cur_y)) {
+      if (can_go_to_x(cur_x - 1, cur_y)) {
         cur_x--;
       }
       break;
     case KEY_DOWN:
     case 'j':
       // buf size
-      if (can_go_to_y(cur_y+1)) {
+      if (can_go_to_y(cur_y + 1)) {
         cur_y++;
-        c_len = get_line_length(cur_y) - 2;
-        if (c_len <= 0) {
-          c_len = 0;
+
+        if (cur_y >= vport_start_y + vport_height) {
+          vport_start_y++;
         }
-        if (cur_x > c_len) {
-          cur_x = c_len;
-        }
-        if (c_len <= 0) {
-          cur_x = 0;
-        }
+
+        adjust_cur_x();
       }
       break;
     case KEY_UP:
     case 'k':
-      if (can_go_to_y(cur_y-1)) {
+      if (can_go_to_y(cur_y - 1)) {
         cur_y--;
-        c_len = get_line_length(cur_y) - 2;
-        if (c_len <= 0) {
-          c_len = 0;
+
+        if (cur_y < vport_start_y) {
+          vport_start_y--;
         }
-        if (cur_x > c_len) {
-          cur_x = c_len;
-        }
-        if (c_len <= 0) {
-          cur_x = 0;
-        }
+        adjust_cur_x();
       }
       break;
     case KEY_RIGHT:
@@ -72,8 +63,20 @@ void handle_input() {
       break;
       // switch to $
     case 'w':
-      cur_x = c_len-1;
+      cur_x = c_len - 1;
       break;
+        case 'g':
+          cur_y = 0;
+          vport_start_y = 0;
+          adjust_cur_x();
+        break;
+        case 'G':
+          cur_y = f_buf.size - 1;
+          if (cur_y >= vport_height) {
+            vport_start_y = cur_y - vport_height + 1;
+          }
+          adjust_cur_x();
+        break;
     case 'i':
       mode = INSERT;
       break;
@@ -95,7 +98,13 @@ void handle_input() {
       cur_x = 0;
       break;
     case 'x':
-      remove_cur_char_from_buf(&f_buf, cur_x, cur_y);
+      if (c_len > 0) {
+        remove_cur_char_from_buf(&f_buf, cur_x, cur_y);
+        c_len = get_line_length(cur_y) - 1;
+        if (cur_x >= c_len) {
+          cur_x -= 1;
+        }
+      }
       break;
     case ctrl('d'):
           // empty line if is cur_y = 0
@@ -143,7 +152,7 @@ void handle_input() {
       }
       break;
     case KEY_DC:
-      if (cur_y >= f_buf.size - 1 && cur_x >= get_line_length(cur_y)-1) {
+      if (cur_y >= f_buf.size - 1 && cur_x >= get_line_length(cur_y) - 1) {
         return;
       }
       remove_cur_char_from_buf(&f_buf, cur_x, cur_y);
@@ -196,6 +205,14 @@ void handle_input() {
     }
     break;
   }
+}
 
-  wmove(m_win, cur_y, cur_x);
+void adjust_cur_x() {
+  int line_len = get_line_length(cur_y) - 2;
+  if (cur_x > line_len) {
+    cur_x = line_len;
+  }
+  if (line_len <= 0) {
+    cur_x = 0;
+  }
 }

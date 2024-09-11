@@ -13,6 +13,8 @@ extern int b_height, b_width, b_y, b_x;
 
 extern int m_max_height, m_max_width;
 
+extern int vport_start_y, vport_height;
+
 extern int colors;
 
 void init_render();

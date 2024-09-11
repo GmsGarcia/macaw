@@ -13,7 +13,7 @@ extern DynamicBuffer f_buf;
 extern char command[50];
 extern char message[255];
 
-extern int cur_y, cur_x, cur_line;
+extern int cur_y, cur_x;
 
 void init_macaw(int argc, char *argv[]);
 

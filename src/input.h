@@ -3,6 +3,6 @@
 
 void handle_input();
 
-void handle_command();
+void adjust_cur_x();
 
 #endif
