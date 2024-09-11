@@ -86,8 +86,7 @@ void render() {
       mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
       mvwprintw(t_win, 0, 0, "%s ", message);
     } else {
-      int c_len = get_line_length(cur_y) - 1;
-      mvwprintw(b_win, 0, 0, " %s > %s - c_len: %d", MODE_NAME[mode], f_name, c_len);
+      mvwprintw(b_win, 0, 0, " %s > %s - vport_start: %d", MODE_NAME[mode], f_name, vport_start_y);
     }
     mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
     mvwprintw(t_win, 0, 0, "%s ", message);

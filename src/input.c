@@ -33,7 +33,7 @@ void handle_input() {
       if (can_go_to_y(cur_y + 1)) {
         cur_y++;
 
-        if (cur_y >= vport_start_y + vport_height) {
+        if (cur_y >= vport_start_y + vport_height - 10) {
           vport_start_y++;
         }
 
@@ -45,7 +45,7 @@ void handle_input() {
       if (can_go_to_y(cur_y - 1)) {
         cur_y--;
 
-        if (cur_y < vport_start_y) {
+        if (cur_y < vport_start_y + 10 && vport_start_y > 0) {
           vport_start_y--;
         }
         adjust_cur_x();
