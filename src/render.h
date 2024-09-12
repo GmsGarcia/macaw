@@ -23,4 +23,6 @@ void render();
 
 void render_buf();
 
+void render_info();
+
 #endif

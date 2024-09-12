@@ -2,6 +2,9 @@
 #define EDITOR_H
 
 #include "buffer.h"
+
+extern const int DEBUG;
+
 enum MODE { NORMAL, INSERT, COMMAND };
 extern const char MODE_NAME[3][15];
 

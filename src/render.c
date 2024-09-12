@@ -7,9 +7,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+// main window
 WINDOW *m_win;
+// counter window - line number
 WINDOW *c_win;
+// bottom bar
 WINDOW *b_win;
+// terminal bar - messages container
 WINDOW *t_win;
 
 int m_height, m_width, m_y, m_x;
@@ -72,46 +76,7 @@ void render() {
   werase(t_win);
 
   render_buf();
-
-  char cur_pos[30];
-  sprintf(cur_pos, " %d:%d ", cur_y + 1, cur_x + 1);
-  int cur_pos_size = getmaxx(b_win) - strlen(cur_pos) - 2;
-
-  wbkgd(b_win, COLOR_PAIR(14));
-  // TODO: somehow remove this redundancy
-  switch (mode) {
-  case NORMAL:
-    wattron(b_win, COLOR_PAIR(7));
-    if (strlen(message) > 0) {
-      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
-      mvwprintw(t_win, 0, 0, "%s ", message);
-    } else {
-      mvwprintw(b_win, 0, 0, " %s > %s - vport_start: %d", MODE_NAME[mode], f_name, vport_start_y);
-    }
-    mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
-    mvwprintw(t_win, 0, 0, "%s ", message);
-    wattroff(b_win, COLOR_PAIR(7));
-    break;
-  case INSERT:
-    wattron(b_win, COLOR_PAIR(9));
-    if (strlen(message) > 0) {
-      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
-      mvwprintw(t_win, 0, 0, "%s ", message);
-    } else {
-      mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
-    }
-    mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
-    mvwprintw(t_win, 0, 0, "%s ", message);
-    wattroff(b_win, COLOR_PAIR(9));
-    break;
-  case COMMAND:
-    wattron(b_win, COLOR_PAIR(11));
-    mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
-    mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
-    mvwprintw(t_win, 0, 0, ":%s ", command);
-    wattroff(b_win, COLOR_PAIR(11));
-    break;
-  }
+  render_info();
 
   wrefresh(m_win);
   wrefresh(c_win);
@@ -122,6 +87,46 @@ void render() {
 
   if (mode != COMMAND) {
     curs_set(2);
+  }
+}
+
+void render_info() {
+  char cur_pos[30];
+  sprintf(cur_pos, " %d:%d ", cur_y + 1, cur_x + 1);
+  int cur_pos_size = getmaxx(b_win) - strlen(cur_pos) - 2;
+
+  wbkgd(b_win, COLOR_PAIR(14));
+
+  int color_pair = 7;
+
+  switch (mode) {
+    case NORMAL:
+      color_pair = 7;
+      break;
+    case INSERT:
+      color_pair = 9;
+      break;
+    case COMMAND:
+      color_pair = 11;
+      break;
+  }
+
+  wattron(b_win, COLOR_PAIR(color_pair));
+  if (DEBUG) {
+    mvwprintw(b_win, 0, 0, " %s > %s - vport_heigth: %d - vport_start_y: %d", MODE_NAME[mode], f_name, vport_height, vport_start_y);
+  } else {
+    mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
+  }
+
+  mvwprintw(b_win, 0, cur_pos_size, " %s ", cur_pos);
+  wattroff(b_win, COLOR_PAIR(color_pair));
+
+  if (mode == COMMAND) {
+    mvwprintw(t_win, 0, 0, ":%s ", command);
+  } else {
+    if (strlen(message) > 0) {
+      mvwprintw(t_win, 0, 0, "%s ", message);
+    }
   }
 }
 
@@ -143,7 +148,7 @@ void render_buf() {
     for (size_t j = 0; j < line_length; j++) {
       char ch = line[j];
 
-      // Handle newline or line wrapping
+      // Handle line wrapping
       if (current_line_length >= max_x) {
         y++;
         x = 0;
