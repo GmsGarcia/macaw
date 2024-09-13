@@ -28,7 +28,7 @@ Macaw is a very simple text editor (completely) based on Vi that's being written
 
 - learn C
 - understand how text editors work
-- improve memory-management skills :PP
+- learn low-level concepts :PP
 
 ---
 
