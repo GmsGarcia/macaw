@@ -1,7 +1,7 @@
 <h1 align="center">
   <a href="https://github.com/GmsGarcia/macaw"><img src="https://raw.githubusercontent.com/GmsGarcia/macaw/master/media/logo.png" alt="Macaw" width="200"></a>
   <br>
-  Macaw
+  Macaw [WIP]
   <br>
 </h1>
 
@@ -15,7 +15,7 @@
 
 <h2 id="description">🦜 What is Macaw?</h2>
 
-Macaw is a very simple text editor (completely) based on Vi that's being written in C.
+Macaw is a very simple text editor (completely) based on Vim that's being written in C.
 
 <h2 id="screenshots">📷 Screenshots</h2>
 
