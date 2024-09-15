@@ -17,7 +17,7 @@ extern char command[50];
 extern char message[255];
 
 extern int cur_y, cur_x;
-extern int cur_buf_y;
+extern int cur_scr_y, cur_scr_x;
 
 void init_macaw(int argc, char *argv[]);
 

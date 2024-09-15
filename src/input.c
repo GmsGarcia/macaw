@@ -32,10 +32,11 @@ void handle_input() {
       // buf size
       if (can_go_to_y(cur_y + 1)) {
         cur_y++;
-
-        if (cur_y >= vport_start_y + vport_height - 10) {
+        
+        if (cur_scr_y >= vport_height - 10) {
           vport_start_y++;
         }
+        adjust_cur_scr();
         adjust_cur_x();
       }
       break;
@@ -44,9 +45,10 @@ void handle_input() {
       if (can_go_to_y(cur_y - 1)) {
         cur_y--;
 
-        if (cur_y < vport_start_y + 10 && vport_start_y > 0) {
+        if (cur_scr_y < 10 && vport_start_y > 0) {
           vport_start_y--;
         }
+        adjust_cur_scr();
         adjust_cur_x();
       }
       break;
@@ -68,6 +70,7 @@ void handle_input() {
           cur_y = 0;
           vport_start_y = 0;
           adjust_cur_x();
+          adjust_cur_scr();
         break;
         case 'G':
           cur_y = f_buf.size - 1;
@@ -75,6 +78,7 @@ void handle_input() {
             vport_start_y = cur_y - vport_height + 1;
           }
           adjust_cur_x();
+          adjust_cur_scr();
         break;
     case 'i':
       mode = INSERT;
@@ -214,4 +218,17 @@ void adjust_cur_x() {
   if (line_len <= 0) {
     cur_x = 0;
   }
+}
+
+void adjust_cur_scr() {
+  int total_visual_lines = 0;
+
+  // Loop through each buffer line before line `n`
+  for (int i = vport_start_y; i < cur_y; i++) {
+      int line_length = strlen(f_buf.data[i]);
+      int visual_lines_in_buf_line = (line_length + m_max_width - 1) / m_max_width;
+      total_visual_lines += visual_lines_in_buf_line; // Add visual lines for each buffer line
+  }
+ 
+  cur_scr_y = total_visual_lines;
 }
