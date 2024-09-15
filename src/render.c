@@ -177,5 +177,3 @@ void render_buf() {
   // Move the cursor back to the current editing position
   wmove(m_win, cur_scr_y, cur_x);
 }
-
-
