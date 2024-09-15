@@ -11,6 +11,7 @@ extern char *filename;
 typedef struct {
   char **data;
   size_t size;
+  size_t v_size;
   long bytes;
 } DynamicBuffer;
 

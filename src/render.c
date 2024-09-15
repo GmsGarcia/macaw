@@ -27,6 +27,25 @@ int m_max_height, m_max_width;
 int vport_start_y, vport_height;
 
 int colors = 0;
+int get_visual_line(int logical_line) {
+  int visual_line = 0;
+  int max_x = m_max_width;
+
+  for (int i = 0; i < logical_line; i++) {
+    char *line = f_buf.data[i];
+    size_t line_length = strlen(line);
+    
+    // Count lines needed for current logical line
+    visual_line += (line_length + max_x - 1) / max_x;
+  }
+
+  return visual_line;
+}
+
+int get_visual_x(int logical_line, int logical_x) {
+  int visual_x = logical_x % m_max_width;
+  return visual_x;
+}
 
 void init_render() {
   initscr();
@@ -51,7 +70,9 @@ void init_render() {
   b_win = newwin(b_height, b_width, b_y, b_x);
   t_win = newwin(t_height, t_width, t_y, t_x);
 
-  wmove(m_win, cur_y - vport_start_y, cur_x);
+  int visual_y = get_visual_line(cur_y);
+  int visual_x = cur_x;
+  wmove(m_win, visual_y - vport_start_y, visual_x);
 
   raw();
   keypad(stdscr, TRUE);
@@ -83,6 +104,8 @@ void render() {
   wrefresh(b_win);
   wrefresh(t_win);
 
+  int visual_y = get_visual_line(cur_y);
+  int visual_x = cur_x;
   wmove(m_win, cur_y - vport_start_y, cur_x);
 
   if (mode != COMMAND) {
@@ -174,7 +197,10 @@ void render_buf() {
       break;
     }
   }
-
   // Move the cursor back to the current editing position
-  wmove(m_win, cur_y - vport_start_y, cur_x);
+  int visual_y = get_visual_line(cur_y);
+  int visual_x = cur_x;
+  wmove(m_win, visual_y - vport_start_y, visual_x);
 }
+
+

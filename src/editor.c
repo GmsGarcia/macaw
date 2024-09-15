@@ -18,6 +18,7 @@ char command[50];
 char message[255];
 
 int cur_y = 0, cur_x = 0;
+int cur_buf_y = 0;
 
 void init_macaw(int argc, char *argv[]) {
   init_buf(&f_buf);

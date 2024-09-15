@@ -19,6 +19,7 @@ void init_buf(DynamicBuffer *buf) {
   buf->data[buf->size - 1][1] = '\0';
 }
 
+
 void free_buf(DynamicBuffer *buf) {
   for (int i = 0; i < buf->size; i++) {
     free(buf->data[i]);

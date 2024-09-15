@@ -36,7 +36,6 @@ void handle_input() {
         if (cur_y >= vport_start_y + vport_height - 10) {
           vport_start_y++;
         }
-
         adjust_cur_x();
       }
       break;
