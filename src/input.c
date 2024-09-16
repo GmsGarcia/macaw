@@ -25,60 +25,87 @@ void handle_input() {
     case 'h':
       if (can_go_to_x(cur_x - 1, cur_y)) {
         cur_x--;
+        saved_x = cur_x;
       }
       break;
     case KEY_DOWN:
     case 'j':
       // buf size
       if (can_go_to_y(cur_y + 1)) {
-        cur_y++;
-        
+        cur_y_len = get_line_length(cur_y) - 2;
+
+        int total_vlines = cur_y_len / m_max_width;
+        int cur_vline = cur_x / m_max_width;
+
+        // if line is wrapped, increase cur_x, otherwise just increase cur_y and clear cur_x
+        if (cur_vline < total_vlines) {
+          cur_x += m_max_width;
+        } else {
+          cur_x = cur_scr_x;
+          cur_y++;
+        }
+
+        // scrolls the viewport if the cursor is at the border (+ padding)
         if (cur_scr_y >= vport_height - 10) {
           vport_start_y++;
         }
-        adjust_cur_scr();
-        adjust_cur_x();
-      }
+      } 
       break;
     case KEY_UP:
     case 'k':
       if (can_go_to_y(cur_y - 1)) {
-        cur_y--;
+        cur_y_len = get_line_length(cur_y) - 2;
 
+        int cur_vline = cur_x / m_max_width;
+
+        // if line is wrapped, decrease cur_x, otherwise just decrease cur_y and clear cur_x
+        if (cur_vline > 0) {
+          cur_x -= m_max_width;
+        } else {
+          cur_y--;
+
+          cur_y_len = get_line_length(cur_y) - 2;
+          int total_vlines = cur_y_len / m_max_width;
+
+          if (total_vlines > 1) {
+            cur_x = (total_vlines * m_max_width) + cur_scr_x;
+          } else {
+            cur_x = cur_scr_x;
+          }
+        }
+
+        // scrolls the viewport if the cursor is at the border (+ padding)
         if (cur_scr_y < 10 && vport_start_y > 0) {
           vport_start_y--;
         }
-        adjust_cur_scr();
-        adjust_cur_x();
       }
       break;
     case KEY_RIGHT:
     case 'l':
       if (can_go_to_x(cur_x, cur_y)) {
         cur_x++;
+        saved_x = cur_x;
       }
       break;
       // switch to 0
     case 'b':
       cur_x = 0;
+      saved_x = cur_x;
       break;
       // switch to $
     case 'w':
       cur_x = c_len - 1;
+      saved_x = cur_x;
       break;
         case 'g':
           cur_y = 0;
           vport_start_y = 0;
-          adjust_cur_x();
-          adjust_cur_scr();
         break;
         case 'G':
           cur_y = f_buf.size - 1;
           if (cur_y >= vport_height) {
             vport_start_y = cur_y - vport_height + 1;
           }
-          adjust_cur_x();
-          adjust_cur_scr();
         break;
     case 'i':
       mode = INSERT;
@@ -208,27 +235,45 @@ void handle_input() {
     }
     break;
   }
+
+  cur_y_len = get_line_length(cur_y) - 2;
+  adjust_cur_x();
+  set_cur_scr();
 }
 
+// fix this: sometimes, it doesnt go to saved_x when supposed to...
 void adjust_cur_x() {
   int line_len = get_line_length(cur_y) - 2;
-  if (cur_x > line_len) {
+  if (saved_x > line_len) {
     cur_x = line_len;
+  } else {
+    int total_vlines = (line_len + m_max_width - 1) / m_max_width;
+    int cur_vline = (cur_x + m_max_width - 1) / m_max_width;
+
+    if (cur_vline - 1 < total_vlines) {
+      cur_x = cur_x;
+    } else {
+      cur_x = saved_x;
+    }
   }
   if (line_len <= 0) {
     cur_x = 0;
   }
 }
 
-void adjust_cur_scr() {
-  int total_visual_lines = 0;
+void set_cur_scr() {
+  int total_vlines = 0;
 
-  // Loop through each buffer line before line `n`
+  // Loop through each buffer line before current line
   for (int i = vport_start_y; i < cur_y; i++) {
-      int line_length = strlen(f_buf.data[i]);
-      int visual_lines_in_buf_line = (line_length + m_max_width - 1) / m_max_width;
-      total_visual_lines += visual_lines_in_buf_line; // Add visual lines for each buffer line
+      int line_len = strlen(f_buf.data[i]);
+      int vlines_in_line = (line_len + m_max_width - 1) / m_max_width;
+      total_vlines += vlines_in_line; // Add visual lines for each buffer line
   }
- 
-  cur_scr_y = total_visual_lines;
+
+  int vlines = (cur_y_len + m_max_width - 1) / m_max_width;
+  int cur_vline = (cur_x + m_max_width - 1) / m_max_width;
+
+  cur_scr_x = cur_x % m_max_width;
+  cur_scr_y = total_vlines + (cur_x/m_max_width);
 }

@@ -18,7 +18,11 @@ char command[50];
 char message[255];
 
 int cur_y = 0, cur_x = 0;
+int saved_x = 0;
+
 int cur_scr_y = 0, cur_scr_x = 0;
+
+int cur_y_len = 0;
 
 void init_macaw(int argc, char *argv[]) {
   init_buf(&f_buf);
@@ -32,8 +36,8 @@ void init_macaw(int argc, char *argv[]) {
     }
     read_file_to_buf(&f_buf, f_path);
   } else {
-    f_path = "new_file.txt";
     f_name = "new_file.txt";
+    f_path = f_name;
   }
 
   run();

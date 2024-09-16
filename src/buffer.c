@@ -63,13 +63,13 @@ void read_file_to_buf(DynamicBuffer *buf, char *path) {
   FILE *file = fopen(path, "rb");
 
   if (file) {
-    char temp[INITIAL_BUFFER_SIZE];
+    char line[INITIAL_BUFFER_SIZE];
 
     buf->size = 0;
     buf->data = realloc(buf->data, buf->size * sizeof(char *));
 
-    while (fgets(temp, sizeof(temp), file)) {
-      read_line_to_buf(buf, temp);
+    while (fgets(line, sizeof(line), file)) {
+      read_line_to_buf(buf, line);
     }
     fclose(file);
   } else {
@@ -263,6 +263,6 @@ int can_go_to_x(int x, int y) {
 int can_go_to_y(int y) {
   if (y >= 0 && y <= f_buf.size - 1) {
     return 1;
-  }
+  } 
   return 0;
 }

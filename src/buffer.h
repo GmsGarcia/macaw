@@ -3,7 +3,7 @@ extern char *filename;
 
 #define BUFFER_H
 
-#define INITIAL_BUFFER_SIZE 1024
+#define INITIAL_BUFFER_SIZE 10000
 #define BUFFER_SIZE_INCREMENT 1
 
 #include <stdio.h>

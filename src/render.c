@@ -51,7 +51,7 @@ void init_render() {
   b_win = newwin(b_height, b_width, b_y, b_x);
   t_win = newwin(t_height, t_width, t_y, t_x);
 
-  wmove(m_win, cur_scr_y, cur_x);
+  wmove(m_win, cur_scr_y, cur_scr_x);
 
   raw();
   keypad(stdscr, TRUE);
@@ -83,7 +83,7 @@ void render() {
   wrefresh(b_win);
   wrefresh(t_win);
 
-  wmove(m_win, cur_scr_y, cur_x);
+  wmove(m_win, cur_scr_y, cur_scr_x);
 
   if (mode != COMMAND) {
     curs_set(2);
@@ -113,7 +113,7 @@ void render_info() {
 
   wattron(b_win, COLOR_PAIR(color_pair));
   if (DEBUG) {
-    mvwprintw(b_win, 0, 0, " %s > %s - vport_heigth: %d - vport_start_y: %d - cur_scr_y: %d", MODE_NAME[mode], f_name, vport_height, vport_start_y, cur_scr_y+1);
+    mvwprintw(b_win, 0, 0, " %s > %s - vport_heigth: %d - vport_start_y: %d - cur_scr_y: %d - cur_scr_x: %d - line_len: %d - saved_x: %d", MODE_NAME[mode], f_name, vport_height, vport_start_y, cur_scr_y+1, cur_scr_x+1, cur_y_len, saved_x);
   } else {
     mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
   }
@@ -175,5 +175,5 @@ void render_buf() {
     }
   }
   // Move the cursor back to the current editing position
-  wmove(m_win, cur_scr_y, cur_x);
+  wmove(m_win, cur_scr_y, cur_scr_x);
 }
