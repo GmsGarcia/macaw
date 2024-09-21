@@ -9,6 +9,9 @@
 
 #define ctrl(x) (x & 0x1F)
 
+int g_total_vlines = 0;
+int g_cur_vline = 0;
+
 void handle_input() {
   int c = wgetch(m_win);
   int c_len = get_line_length(cur_y) - 1;
@@ -244,18 +247,19 @@ void handle_input() {
 // fix this: sometimes, it doesnt go to saved_x when supposed to...
 void adjust_cur_x() {
   int line_len = get_line_length(cur_y) - 2;
-  if (saved_x > line_len) {
-    cur_x = line_len;
-  } else {
-    int total_vlines = (line_len + m_max_width - 1) / m_max_width;
-    int cur_vline = (cur_x + m_max_width - 1) / m_max_width;
+  g_total_vlines = (line_len + m_max_width - 1) / m_max_width;
+  g_cur_vline = (cur_x + m_max_width) / m_max_width;
 
-    if (cur_vline - 1 < total_vlines) {
-      cur_x = cur_x;
-    } else {
-      cur_x = saved_x;
-    }
+  if (g_cur_vline <= g_total_vlines && g_total_vlines > 1) {
+    cur_x = m_max_width * (g_cur_vline - 1) + saved_x;
+  } else {
+    cur_x = saved_x;
   }
+
+  if (cur_x > line_len) {
+    cur_x = line_len;
+  } 
+
   if (line_len <= 0) {
     cur_x = 0;
   }

@@ -2,6 +2,7 @@
 #include "buffer.h"
 #include "color.h"
 #include "editor.h"
+#include "input.h"
 #include <curses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -113,7 +114,8 @@ void render_info() {
 
   wattron(b_win, COLOR_PAIR(color_pair));
   if (DEBUG) {
-    mvwprintw(b_win, 0, 0, " %s > %s - vport_heigth: %d - vport_start_y: %d - cur_scr_y: %d - cur_scr_x: %d - line_len: %d - saved_x: %d", MODE_NAME[mode], f_name, vport_height, vport_start_y, cur_scr_y+1, cur_scr_x+1, cur_y_len, saved_x);
+    mvwprintw(b_win, 0, 0, " %s > %s - cur_scr_y: %d - cur_scr_x: %d - line_len: %d - saved_x: %d - g_total_vlines: %d - g_cur_vline: %d", MODE_NAME[mode], f_name, cur_scr_y+1, cur_scr_x+1, cur_y_len+1, saved_x+1, g_total_vlines, g_cur_vline);
+    //mvwprintw(b_win, 0, 0, " %s > %s - vport_heigth: %d - vport_start_y: %d - cur_scr_y: %d - cur_scr_x: %d - line_len: %d - saved_x: %d - g_total_vlines: %d - g_cur_vline: %d", MODE_NAME[mode], f_name, vport_height, vport_start_y, cur_scr_y+1, cur_scr_x+1, cur_y_len, saved_x, g_total_vlines, g_cur_vline);
   } else {
     mvwprintw(b_win, 0, 0, " %s > %s ", MODE_NAME[mode], f_name);
   }
