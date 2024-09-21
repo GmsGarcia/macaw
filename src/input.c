@@ -40,19 +40,20 @@ void handle_input() {
         int total_vlines = cur_y_len / m_max_width;
         int cur_vline = cur_x / m_max_width;
 
-        // if line is wrapped, increase cur_x, otherwise just increase cur_y and clear cur_x
+        // if line is wrapped, increase cur_x, otherwise just increase cur_y and
+        // clear cur_x
         if (cur_vline < total_vlines) {
           cur_x += m_max_width;
         } else {
-          cur_x = cur_scr_x;
+          cur_x = cur_vx;
           cur_y++;
         }
 
         // scrolls the viewport if the cursor is at the border (+ padding)
-        if (cur_scr_y >= vport_height - 10) {
+        if (cur_vy >= vport_height - 10) {
           vport_start_y++;
         }
-      } 
+      }
       break;
     case KEY_UP:
     case 'k':
@@ -61,7 +62,8 @@ void handle_input() {
 
         int cur_vline = cur_x / m_max_width;
 
-        // if line is wrapped, decrease cur_x, otherwise just decrease cur_y and clear cur_x
+        // if line is wrapped, decrease cur_x, otherwise just decrease cur_y and
+        // clear cur_x
         if (cur_vline > 0) {
           cur_x -= m_max_width;
         } else {
@@ -71,14 +73,14 @@ void handle_input() {
           int total_vlines = cur_y_len / m_max_width;
 
           if (total_vlines > 1) {
-            cur_x = (total_vlines * m_max_width) + cur_scr_x;
+            cur_x = (total_vlines * m_max_width) + cur_vx;
           } else {
-            cur_x = cur_scr_x;
+            cur_x = cur_vx;
           }
         }
 
         // scrolls the viewport if the cursor is at the border (+ padding)
-        if (cur_scr_y < 10 && vport_start_y > 0) {
+        if (cur_vy < 10 && vport_start_y > 0) {
           vport_start_y--;
         }
       }
@@ -100,23 +102,23 @@ void handle_input() {
       cur_x = c_len - 1;
       saved_x = cur_x;
       break;
-        case 'g':
-          cur_y = 0;
-          vport_start_y = 0;
-        break;
-        case 'G':
-          cur_y = f_buf.size - 1;
-          if (cur_y >= vport_height) {
-            vport_start_y = cur_y - vport_height + 1;
-          }
-        break;
+    case 'g':
+      cur_y = 0;
+      vport_start_y = 0;
+      break;
+    case 'G':
+      cur_y = f_buf.size - 1;
+      if (cur_y >= vport_height) {
+        vport_start_y = cur_y - vport_height + 1;
+      }
+      break;
     case 'i':
       mode = INSERT;
       break;
     case 'a':
       if (get_line_length(cur_y) > 1) {
         cur_x++;
-      } 
+      }
       mode = INSERT;
       break;
     case 'o':
@@ -140,7 +142,7 @@ void handle_input() {
       }
       break;
     case ctrl('d'):
-          // empty line if is cur_y = 0
+      // empty line if is cur_y = 0
       remove_line_from_buf(&f_buf, cur_y);
       if (cur_y >= f_buf.size - 1 && cur_y > 0) {
         cur_y--;
@@ -244,7 +246,14 @@ void handle_input() {
   set_cur_scr();
 }
 
-// fix this: sometimes, it doesnt go to saved_x when supposed to...
+/* note: adjusts the buffer cursor according to the following cases:
+   - when cursor is within a wrapped line, it will adjust to the new line while
+ maintaining the screen column
+   - when cursor position is higher than the line lenght, if will lower to the
+ last line character
+   - when line length is, somehow, less than 0, it will set the cur_x value to
+ 0. PS: this is probably implemented to fix empty lines...
+*/
 void adjust_cur_x() {
   int line_len = get_line_length(cur_y) - 2;
   g_total_vlines = (line_len + m_max_width - 1) / m_max_width;
@@ -258,26 +267,27 @@ void adjust_cur_x() {
 
   if (cur_x > line_len) {
     cur_x = line_len;
-  } 
+  }
 
   if (line_len <= 0) {
     cur_x = 0;
   }
 }
 
+/* note: translates buffer position to screen position - cur_x -> cur_vx */
 void set_cur_scr() {
   int total_vlines = 0;
 
   // Loop through each buffer line before current line
   for (int i = vport_start_y; i < cur_y; i++) {
-      int line_len = strlen(f_buf.data[i]);
-      int vlines_in_line = (line_len + m_max_width - 1) / m_max_width;
-      total_vlines += vlines_in_line; // Add visual lines for each buffer line
+    int line_len = strlen(f_buf.data[i]);
+    int vlines_in_line = (line_len + m_max_width - 1) / m_max_width;
+    total_vlines += vlines_in_line; // Add visual lines for each buffer line
   }
 
   int vlines = (cur_y_len + m_max_width - 1) / m_max_width;
   int cur_vline = (cur_x + m_max_width - 1) / m_max_width;
 
-  cur_scr_x = cur_x % m_max_width;
-  cur_scr_y = total_vlines + (cur_x/m_max_width);
+  cur_vx = cur_x % m_max_width;
+  cur_vy = total_vlines + (cur_x / m_max_width);
 }

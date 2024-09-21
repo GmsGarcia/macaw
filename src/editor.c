@@ -20,7 +20,7 @@ char message[255];
 int cur_y = 0, cur_x = 0;
 int saved_x = 0;
 
-int cur_scr_y = 0, cur_scr_x = 0;
+int cur_vy = 0, cur_vx = 0;
 
 int cur_y_len = 0;
 

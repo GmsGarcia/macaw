@@ -19,7 +19,7 @@ extern char message[255];
 extern int cur_y, cur_x;
 extern int saved_x;
 
-extern int cur_scr_y, cur_scr_x;
+extern int cur_vy, cur_vx;
 
 extern int cur_y_len;
 
