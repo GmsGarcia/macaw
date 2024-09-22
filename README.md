@@ -10,12 +10,13 @@
 <p align="center">
   <a href="#description">Description</a> •
   <a href="#goals">Goals</a> •
-  <a href="#screenshots">Screenshots</a>
+  <a href="#screenshots">Screenshots</a> •
+  <a href="https://gmsgarcia.pt/projects/macaw.html">Website</a>
 </p>
 
 <h2 id="description">🦜 What is Macaw?</h2>
 
-Macaw is a very simple text editor (completely) based on Vim that's being written in C.
+Macaw is a minimalist text editor currently being developed, drawing heavily from the core functionality of Vim. It is written entirely in C and leverages the ncurses library for handling text-based user interfaces.
 
 <h2 id="screenshots">📷 Screenshots</h2>
 
