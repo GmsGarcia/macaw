@@ -13,7 +13,15 @@ int g_total_vlines = 0;
 int g_cur_vline = 0;
 
 void handle_input() {
-  int c = wgetch(m_win);
+  int key = wgetch(m_win);
+  int force_len = 0;
+
+  if (key == KEY_RESIZE) {
+    init_render();
+    set_cur_scr();
+    return;
+  }
+
   int c_len = get_line_length(cur_y) - 1;
   int prev_line;
 
@@ -23,7 +31,7 @@ void handle_input() {
 
   switch (mode) {
   case NORMAL:
-    switch (c) {
+    switch (key) {
     case KEY_LEFT:
     case 'h':
       if (can_go_to_x(cur_x - 1, cur_y)) {
@@ -113,11 +121,14 @@ void handle_input() {
       }
       break;
     case 'i':
+      saved_x = cur_x;
       mode = INSERT;
       break;
     case 'a':
       if (get_line_length(cur_y) > 1) {
         cur_x++;
+        saved_x = cur_x;
+        force_len = 1;
       }
       mode = INSERT;
       break;
@@ -159,7 +170,7 @@ void handle_input() {
     }
     break;
   case INSERT:
-    switch (c) {
+    switch (key) {
     case 27:
     case ctrl('c'):
       mode = NORMAL;
@@ -198,18 +209,20 @@ void handle_input() {
       cur_x = 0;
       break;
     default:
-      insert_char_to_buf(&f_buf, cur_x, cur_y, c);
+      insert_char_to_buf(&f_buf, cur_x, cur_y, key);
       cur_x++;
       break;
     }
+    force_len = 1;
+    saved_x = cur_x;
     break;
   case COMMAND:
     // ESC or CTRL-c
-    if (c == 27 || c == ctrl('c')) {
+    if (key == 27 || key == ctrl('c')) {
       mode = NORMAL;
       memset(command, 0, sizeof(command));
       // CARRIAGE RETURN
-    } else if (c == 10) {
+    } else if (key == 10) {
       if (strcmp(command, "q") == 0) {
         endwin();
         exit(0);
@@ -230,11 +243,11 @@ void handle_input() {
 
       mode = NORMAL;
       // BACKSPACE or DELETE
-    } else if (c == 8 || c == 127) {
+    } else if (key == 8 || key == 127) {
       command[strlen(command) - 1] = '\0';
     } else {
       char cha[2];
-      cha[0] = c;
+      cha[0] = key;
       cha[1] = '\0';
       strncat(command, cha, 1);
     }
@@ -242,7 +255,7 @@ void handle_input() {
   }
 
   cur_y_len = get_line_length(cur_y) - 2;
-  adjust_cur_x();
+  adjust_cur_x(force_len);
   set_cur_scr();
 }
 
@@ -254,7 +267,7 @@ void handle_input() {
    - when line length is, somehow, less than 0, it will set the cur_x value to
  0. PS: this is probably implemented to fix empty lines...
 */
-void adjust_cur_x() {
+void adjust_cur_x(int force_len) {
   int line_len = get_line_length(cur_y) - 2;
   g_total_vlines = (line_len + m_max_width - 1) / m_max_width;
   g_cur_vline = (cur_x + m_max_width) / m_max_width;
@@ -265,7 +278,7 @@ void adjust_cur_x() {
     cur_x = saved_x;
   }
 
-  if (cur_x > line_len) {
+  if (cur_x > line_len && !force_len) {
     cur_x = line_len;
   }
 
@@ -284,9 +297,6 @@ void set_cur_scr() {
     int vlines_in_line = (line_len + m_max_width - 1) / m_max_width;
     total_vlines += vlines_in_line; // Add visual lines for each buffer line
   }
-
-  int vlines = (cur_y_len + m_max_width - 1) / m_max_width;
-  int cur_vline = (cur_x + m_max_width - 1) / m_max_width;
 
   cur_vx = cur_x % m_max_width;
   cur_vy = total_vlines + (cur_x / m_max_width);

@@ -133,7 +133,7 @@ void render_info() {
 }
 
 void render_buf() {
-  int y = 0, x = 0; // Start rendering from (1, 1) to avoid border overlap
+  int y = 0; // Start rendering from (1, 1) to avoid border overlap
   int max_y = m_max_height;
   int max_x = m_max_width;
 
@@ -142,7 +142,7 @@ void render_buf() {
 
   for (size_t i = vport_start_y; i < vport_start_y + vport_height && i < f_buf.size; i++) {
     char *line = f_buf.data[i];
-    size_t line_length = strlen(line);
+    size_t line_length = strlen(line) - 1;
     size_t current_line_length = 0;
     size_t x = 0;
 

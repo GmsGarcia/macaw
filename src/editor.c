@@ -5,7 +5,7 @@
 #include <curses.h>
 #include <string.h>
 
-const int DEBUG = 1;
+const int DEBUG = 0;
 
 enum MODE mode = NORMAL;
 const char MODE_NAME[3][15] = {"NORMAL", "INSERT", "COMMAND"};
