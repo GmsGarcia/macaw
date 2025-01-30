@@ -1,7 +1,7 @@
 <h1 align="center">
   <a href="https://github.com/GmsGarcia/macaw"><img src="https://raw.githubusercontent.com/GmsGarcia/macaw/master/media/logo.png" alt="Macaw" width="200"></a>
   <br>
-  Macaw [WIP]
+  Macaw
   <br>
 </h1>
 
